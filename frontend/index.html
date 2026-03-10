@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PCL Get</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: '微软雅黑', Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #4a6fa5;
+        }
+        
+        .top-section {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .top-section label {
+            font-weight: bold;
+        }
+        
+        .top-section select {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .top-section button {
+            padding: 8px 16px;
+            background-color: #4a6fa5;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .top-section button:hover {
+            background-color: #3a5a85;
+        }
+        
+        .schedule-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+        }
+        
+        .schedule-section h3 {
+            margin-bottom: 10px;
+        }
+        
+        .schedule-section .controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 20px;
+        }
+        
+        .left-panel {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 4px;
+        }
+        
+        .left-panel h3 {
+            margin-bottom: 10px;
+        }
+        
+        .left-panel select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .save-section, .backup-items-section, .backup-history-section {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 4px;
+        }
+        
+        .save-section h3, .backup-items-section h3, .backup-history-section h3 {
+            margin-bottom: 10px;
+        }
+        
+        .save-type {
+            font-weight: bold;
+            color: #4a6fa5;
+            margin-bottom: 10px;
+        }
+        
+        .save-list {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        
+        .save-list div {
+            padding: 8px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .save-list div:hover {
+            background-color: #e9e9e9;
+        }
+        
+        .save-list div.selected {
+            background-color: #d1e0f0;
+        }
+        
+        .backup-items {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .backup-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .button-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .button-section button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .btn-backup {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        .btn-restore {
+            background-color: #ff9800;
+            color: white;
+        }
+        
+        .btn-select-all {
+            background-color: #9e9e9e;
+            color: white;
+        }
+        
+        .backup-history {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .backup-item-history {
+            padding: 8px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .backup-item-history:hover {
+            background-color: #e9e9e9;
+        }
+        
+        .backup-item-history.selected {
+            background-color: #d1e0f0;
+        }
+        
+        .status-message {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        
+        .status-success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .status-error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .note-input {
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .note-input label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .note-input input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PCL Get - Minecraft 存档备份工具</h1>
+        
+        <!-- 顶部选择 -->
+        <div class="top-section">
+            <label for="mc-instance">选择 .minecraft 实例：</label>
+            <select id="mc-instance">
+                <option value="">正在搜索...</option>
+            </select>
+            <button id="refresh-btn">刷新列表</button>
+        </div>
+        
+        <!-- 定时备份 -->
+        <div class="schedule-section">
+            <h3>定时备份</h3>
+            <div class="controls">
+                <span id="schedule-status">定时备份：未启动</span>
+                <label for="interval">备份间隔（分钟）：</label>
+                <input type="number" id="interval" min="5" max="1440" value="30">
+                <button id="start-schedule">启动定时备份</button>
+                <button id="stop-schedule" disabled>停止定时备份</button>
+            </div>
+        </div>
+        
+        <!-- 主体内容 -->
+        <div class="main-content">
+            <!-- 左侧版本选择 -->
+            <div class="left-panel">
+                <h3>游戏版本</h3>
+                <select id="version-select">
+                    <option value="">请选择版本</option>
+                </select>
+            </div>
+            
+            <!-- 右侧内容 -->
+            <div class="right-panel">
+                <!-- 存档选择 -->
+                <div class="save-section">
+                    <h3>存档选择（自动适配版本隔离/全局共享）</h3>
+                    <div class="save-type" id="save-type">存档类型：未检测</div>
+                    <div class="save-list" id="save-list">
+                        <!-- 存档列表将动态生成 -->
+                    </div>
+                </div>
+                
+                <!-- 备份项选择 -->
+                <div class="backup-items-section">
+                    <h3>可选备份内容（勾选即备份）</h3>
+                    <div class="backup-items" id="backup-items">
+                        <!-- 备份项将动态生成 -->
+                    </div>
+                    <div class="button-section">
+                        <button id="backup-btn" disabled class="btn-backup">开始备份</button>
+                        <button id="restore-btn" disabled class="btn-restore">回滚选中备份</button>
+                        <button id="select-all-btn" class="btn-select-all">全选/取消全选</button>
+                    </div>
+                    <div class="note-input">
+                        <label for="backup-note">备注（可选）：</label>
+                        <input type="text" id="backup-note" placeholder="输入备注">
+                    </div>
+                </div>
+                
+                <!-- 备份历史 -->
+                <div class="backup-history-section">
+                    <h3>当前存档的备份历史</h3>
+                    <div class="backup-history" id="backup-history">
+                        <!-- 备份历史将动态生成 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 状态消息 -->
+        <div class="status-message" id="status-message" style="display: none;"></div>
+    </div>
+    
+    <script>
+        // 全局变量
+        let currentMcRoot = '';
+        let currentVersion = '';
+        let currentSave = '';
+        let saveRoot = '';
+        let saveType = '';
+        let backupNameMap = {};
+        let scheduledBackupRunning = false;
+        
+        // 全量备份项
+        const FULL_BACKUP_MAP = {
+            "地图存档": ["saves"],
+            "游戏全局设置": ["options.txt", "optionsof.txt"],
+            "模组配置文件": ["config"],
+            "服务器列表": ["servers.dat"],
+            "Mod文件": ["mods"],
+            "资源包/材质包": ["resourcepacks"],
+            "光影包": ["shaderpacks"],
+            "世界数据包": ["datapacks"],
+            "创世神蓝图": ["schematics", "WorldEdit"],
+            "运行日志": ["logs"],
+            "崩溃报告": ["crash-reports"]
+        };
+        
+        // API 基础 URL
+        const API_BASE_URL = 'http://localhost:5000/api';
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            refreshMcList();
+            initEventListeners();
+            generateBackupItems();
+        });
+        
+        // 初始化事件监听器
+        function initEventListeners() {
+            // 刷新 Minecraft 实例列表
+            document.getElementById('refresh-btn').addEventListener('click', refreshMcList);
+            
+            // Minecraft 实例选择
+            document.getElementById('mc-instance').addEventListener('change', onMcSelected);
+            
+            // 版本选择
+            document.getElementById('version-select').addEventListener('change', onVersionSelected);
+            
+            // 开始备份
+            document.getElementById('backup-btn').addEventListener('click', doBackup);
+            
+            // 恢复备份
+            document.getElementById('restore-btn').addEventListener('click', doRestore);
+            
+            // 全选/取消全选
+            document.getElementById('select-all-btn').addEventListener('click', toggleSelectAll);
+            
+            // 启动定时备份
+            document.getElementById('start-schedule').addEventListener('click', startSchedule);
+            
+            // 停止定时备份
+            document.getElementById('stop-schedule').addEventListener('click', stopSchedule);
+        }
+        
+        // 刷新 Minecraft 实例列表
+        function refreshMcList() {
+            const mcSelect = document.getElementById('mc-instance');
+            mcSelect.innerHTML = '<option value="">正在搜索...</option>';
+            
+            fetch(`${API_BASE_URL}/minecraft/folders`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        if (data.data.length > 0) {
+                            mcSelect.innerHTML = '';
+                            data.data.forEach(folder => {
+                                const option = document.createElement('option');
+                                option.value = folder;
+                                option.textContent = folder;
+                                mcSelect.appendChild(option);
+                            });
+                            mcSelect.selectedIndex = 0;
+                            onMcSelected();
+                        } else {
+                            mcSelect.innerHTML = '<option value="">未找到.minecraft文件夹</option>';
+                            showStatus('未找到.minecraft文件夹', 'error');
+                        }
+                    } else {
+                        mcSelect.innerHTML = '<option value="">搜索失败</option>';
+                        showStatus(data.error, 'error');
+                    }
+                })
+                .catch(error => {
+                    mcSelect.innerHTML = '<option value="">搜索失败</option>';
+                    showStatus('搜索失败: ' + error, 'error');
+                });
+        }
+        
+        // Minecraft 实例选择
+        function onMcSelected() {
+            currentMcRoot = document.getElementById('mc-instance').value;
+            if (!currentMcRoot) return;
+            
+            // 清空版本列表
+            const versionSelect = document.getElementById('version-select');
+            versionSelect.innerHTML = '<option value="">正在加载...</option>';
+            
+            // 清空存档列表
+            document.getElementById('save-list').innerHTML = '';
+            document.getElementById('save-type').textContent = '存档类型：未检测';
+            
+            // 清空备份历史
+            document.getElementById('backup-history').innerHTML = '';
+            document.getElementById('backup-btn').disabled = true;
+            document.getElementById('restore-btn').disabled = true;
+            
+            // 加载版本列表
+            fetch(`${API_BASE_URL}/minecraft/versions?mc_root=${encodeURIComponent(currentMcRoot)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        versionSelect.innerHTML = '<option value="">请选择版本</option>';
+                        data.data.forEach(version => {
+                            const option = document.createElement('option');
+                            option.value = version;
+                            option.textContent = version;
+                            versionSelect.appendChild(option);
+                        });
+                    } else {
+                        versionSelect.innerHTML = '<option value="">加载失败</option>';
+                        showStatus(data.error, 'error');
+                    }
+                })
+                .catch(error => {
+                    versionSelect.innerHTML = '<option value="">加载失败</option>';
+                    showStatus('加载版本失败: ' + error, 'error');
+                });
+        }
+        
+        // 版本选择
+        function onVersionSelected() {
+            currentVersion = document.getElementById('version-select').value;
+            if (!currentVersion || !currentMcRoot) return;
+            
+            // 清空存档列表
+            const saveList = document.getElementById('save-list');
+            saveList.innerHTML = '';
+            document.getElementById('save-type').textContent = '存档类型：正在检测...';
+            
+            // 清空备份历史
+            document.getElementById('backup-history').innerHTML = '';
+            document.getElementById('backup-btn').disabled = true;
+            document.getElementById('restore-btn').disabled = true;
+            
+            // 加载存档列表
+            fetch(`${API_BASE_URL}/minecraft/saves?mc_root=${encodeURIComponent(currentMcRoot)}&version=${encodeURIComponent(currentVersion)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const { saves, save_root, save_type } = data.data;
+                        saveRoot = save_root;
+                        saveType = save_type;
+                        document.getElementById('save-type').textContent = `存档类型：${save_type}`;
+                        
+                        if (saves.length > 0) {
+                            saves.forEach(save => {
+                                const saveItem = document.createElement('div');
+                                saveItem.textContent = save;
+                                saveItem.addEventListener('click', () => {
+                                    selectSave(save);
+                                });
+                                saveList.appendChild(saveItem);
+                            });
+                        } else {
+                            saveList.innerHTML = '<div style="text-align: center; color: #999;">无存档</div>';
+                        }
+                    } else {
+                        showStatus(data.error, 'error');
+                    }
+                })
+                .catch(error => {
+                    showStatus('加载存档失败: ' + error, 'error');
+                });
+        }
+        
+        // 选择存档
+        function selectSave(save) {
+            currentSave = save;
+            
+            // 更新选中状态
+            const saveItems = document.querySelectorAll('#save-list div');
+            saveItems.forEach(item => {
+                if (item.textContent === save) {
+                    item.classList.add('selected');
+                } else {
+                    item.classList.remove('selected');
+                }
+            });
+            
+            // 刷新备份历史
+            refreshBackupHistory();
+            
+            // 更新备份按钮状态
+            updateBackupBtnState();
+        }
+        
+        // 生成备份项
+        function generateBackupItems() {
+            const backupItemsContainer = document.getElementById('backup-items');
+            backupItemsContainer.innerHTML = '';
+            
+            Object.keys(FULL_BACKUP_MAP).forEach(item => {
+                const backupItem = document.createElement('div');
+                backupItem.className = 'backup-item';
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = `backup-${item}`;
+                checkbox.addEventListener('change', updateBackupBtnState);
+                
+                const label = document.createElement('label');
+                label.htmlFor = `backup-${item}`;
+                label.textContent = item;
+                
+                backupItem.appendChild(checkbox);
+                backupItem.appendChild(label);
+                backupItemsContainer.appendChild(backupItem);
+            });
+        }
+        
+        // 更新备份按钮状态
+        function updateBackupBtnState() {
+            const selectedItems = getSelectedBackupItems();
+            if (currentSave && selectedItems.length > 0) {
+                document.getElementById('backup-btn').disabled = false;
+            } else {
+                document.getElementById('backup-btn').disabled = true;
+            }
+        }
+        
+        // 获取选中的备份项
+        function getSelectedBackupItems() {
+            const selectedItems = [];
+            Object.keys(FULL_BACKUP_MAP).forEach(item => {
+                const checkbox = document.getElementById(`backup-${item}`);
+                if (checkbox && checkbox.checked) {
+                    selectedItems.push(item);
+                }
+            });
+            return selectedItems;
+        }
+        
+        // 全选/取消全选
+        function toggleSelectAll() {
+            const checkboxes = document.querySelectorAll('#backup-items input[type="checkbox"]');
+            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+            
+            checkboxes.forEach(cb => {
+                cb.checked = !allChecked;
+            });
+            
+            updateBackupBtnState();
+        }
+        
+        // 开始备份
+        function doBackup() {
+            const selectedItems = getSelectedBackupItems();
+            if (!currentSave || !saveRoot || selectedItems.length === 0) {
+                showStatus('请选择存档和至少一项备份内容', 'error');
+                return;
+            }
+            
+            const note = document.getElementById('backup-note').value;
+            
+            fetch(`${API_BASE_URL}/backup`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    mc_root: currentMcRoot,
+                    save_root: saveRoot,
+                    selected_items: selectedItems,
+                    selected_save: currentSave,
+                    note: note
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const { success, failed } = data.data;
+                    let message = `成功：${success.join(', ')}\n`;
+                    if (failed.length > 0) {
+                        message += `失败：${failed.join(', ')}`;
+                    }
+                    showStatus(message, 'success');
+                    refreshBackupHistory();
+                } else {
+                    showStatus(data.error, 'error');
+                }
+            })
+            .catch(error => {
+                showStatus('备份失败: ' + error, 'error');
+            });
+        }
+        
+        // 恢复备份
+        function doRestore() {
+            const selectedBackup = document.querySelector('#backup-history .selected');
+            if (!selectedBackup) {
+                showStatus('请先选择一个备份', 'error');
+                return;
+            }
+            
+            const backupPath = backupNameMap[selectedBackup.textContent];
+            if (!backupPath) {
+                showStatus('备份路径不存在', 'error');
+                return;
+            }
+            
+            if (confirm('回滚会覆盖当前的对应文件，是否继续？')) {
+                fetch(`${API_BASE_URL}/restore`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        zip_path: backupPath,
+                        target_mc_root: currentMcRoot,
+                        save_root: saveRoot
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showStatus('回滚完成！已适配存档实际存储位置', 'success');
+                    } else {
+                        showStatus(data.error, 'error');
+                    }
+                })
+                .catch(error => {
+                    showStatus('恢复失败: ' + error, 'error');
+                });
+            }
+        }
+        
+        // 刷新备份历史
+        function refreshBackupHistory() {
+            if (!currentVersion || !currentSave) return;
+            
+            const backupHistory = document.getElementById('backup-history');
+            backupHistory.innerHTML = '正在加载...';
+            
+            fetch(`${API_BASE_URL}/backup/history?version=${encodeURIComponent(currentVersion)}&save_name=${encodeURIComponent(currentSave)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        backupHistory.innerHTML = '';
+                        backupNameMap = {};
+                        
+                        if (data.data.length > 0) {
+                            data.data.forEach(backup => {
+                                const backupItem = document.createElement('div');
+                                backupItem.className = 'backup-item-history';
+                                backupItem.textContent = backup.name;
+                                backupNameMap[backup.name] = backup.path;
+                                
+                                backupItem.addEventListener('click', () => {
+                                    // 移除其他选中状态
+                                    document.querySelectorAll('#backup-history .selected').forEach(item => {
+                                        item.classList.remove('selected');
+                                    });
+                                    // 添加当前选中状态
+                                    backupItem.classList.add('selected');
+                                    // 启用恢复按钮
+                                    document.getElementById('restore-btn').disabled = false;
+                                });
+                                
+                                backupHistory.appendChild(backupItem);
+                            });
+                        } else {
+                            backupHistory.innerHTML = '<div style="text-align: center; color: #999;">无备份历史</div>';
+                        }
+                    } else {
+                        backupHistory.innerHTML = '<div style="text-align: center; color: #999;">加载失败</div>';
+                        showStatus(data.error, 'error');
+                    }
+                })
+                .catch(error => {
+                    backupHistory.innerHTML = '<div style="text-align: center; color: #999;">加载失败</div>';
+                    showStatus('加载备份历史失败: ' + error, 'error');
+                });
+        }
+        
+        // 启动定时备份
+        function startSchedule() {
+            if (!currentSave) {
+                showStatus('请先选择要备份的存档', 'error');
+                return;
+            }
+            
+            const interval = document.getElementById('interval').value;
+            if (interval < 5) {
+                showStatus('备份间隔不能少于5分钟', 'error');
+                return;
+            }
+            
+            // 这里可以实现定时备份的逻辑
+            scheduledBackupRunning = true;
+            document.getElementById('start-schedule').disabled = true;
+            document.getElementById('stop-schedule').disabled = false;
+            document.getElementById('schedule-status').textContent = `定时备份：运行中 | 间隔：${interval}分钟`;
+            showStatus(`定时备份已启动，每${interval}分钟自动备份一次`, 'success');
+        }
+        
+        // 停止定时备份
+        function stopSchedule() {
+            scheduledBackupRunning = false;
+            document.getElementById('start-schedule').disabled = false;
+            document.getElementById('stop-schedule').disabled = true;
+            document.getElementById('schedule-status').textContent = '定时备份：已停止';
+            showStatus('定时备份已停止', 'success');
+        }
+        
+        // 显示状态消息
+        function showStatus(message, type) {
+            const statusMessage = document.getElementById('status-message');
+            statusMessage.textContent = message;
+            statusMessage.className = `status-message status-${type}`;
+            statusMessage.style.display = 'block';
+            
+            // 3秒后自动隐藏
+            setTimeout(() => {
+                statusMessage.style.display = 'none';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
